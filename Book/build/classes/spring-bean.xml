@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:jdbc="http://www.springframework.org/schema/jdbc" xmlns:jee="http://www.springframework.org/schema/jee"
+	 xmlns:task="http://www.springframework.org/schema/task"
+	xsi:schemaLocation="
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.0.xsd
+		http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc-4.0.xsd
+		
+		http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee-4.0.xsd
+		
+		http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task-4.0.xsd">
+	<description>Spring公共配置 </description>
+
+	<!-- 配置Spring上下文的注解 -->
+	<context:annotation-config />
+	<!-- 使用annotation 自动注册bean, 并保证@Required、@Autowired的属性被注入 -->
+	<context:component-scan base-package="book">
+		<context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller" />
+	</context:component-scan>
+
+	<!-- 属性文件位置 -->
+	<context:property-placeholder location="classpath:*.properties" />
+	<!-- 数据连接池  bonecp -->
+	<bean id="dataSource" class="com.jolbox.bonecp.BoneCPDataSource"  
+        destroy-method="close">
+         <!-- 数据库驱动 -->  
+		<property name="driverClass"  value="${jdbc.driver}" />
+		<!-- 相应驱动的jdbcUrl -->  
+        <property name="jdbcUrl" value="${jdbc.url}" />  
+		<!-- 数据库的用户名 -->  
+        <property name="username" value="${jdbc.username}" />  
+        <!-- 数据库的密码 -->  
+        <property name="password" value="${jdbc.password}" />  
+        <!-- 检查数据库连接池中空闲连接的间隔时间，单位是分，默认值：240，如果要取消则设置为0 -->  
+        <property name="idleMaxAge" value="240" />
+        <!-- 连接池中未使用的链接最大存活时间，单位是分，默认值：60，如果要永远存活设置为0 -->  
+       <property name="idleConnectionTestPeriod" value="60" />
+        <!-- 每个分区最大的连接数 -->  
+          <property name="maxConnectionsPerPartition" value="30" />
+        <!-- 每个分区最小的连接数 -->  
+        <property name="minConnectionsPerPartition" value="10" />
+        <!-- 分区数 ，默认值2，最小1，推荐3-4，视应用而定-->  
+          <property name="partitionCount" value="3" />
+        <!-- 每次去拿数据库连接的时候一次性要拿几个,默认值：2 -->  
+          <property name="acquireIncrement" value="5" />
+        <!-- 缓存prepared statements的大小，默认值：0 -->  
+        <property name="statementsCacheSize" value="100" />  
+        <!-- 每个分区释放链接助理进程的数量，默认值：3，除非你的一个数据库连接的时间内做了很多工作，不然过多的助理进程会影响你的性能 -->  
+        <property name="releaseHelperThreads" value="3" />  
+	</bean>
+
+	<bean id="sessionFactory"
+		class="org.springframework.orm.hibernate5.LocalSessionFactoryBean">
+		<property name="dataSource" ref="dataSource" />
+		<!-- 实体所对应的包 -->
+		<property name="packagesToScan" value="book.entity" />
+		<property name="hibernateProperties">
+			<props>
+				<prop key="hibernate.dialect">${hibernate.dialect}</prop>
+				<prop key="hibernate.show_sql">${hibernate.show_sql}</prop>
+				<prop key="hibernate.format_sql">${hibernate.format_sql}</prop>
+				<prop key="hibernate.useUnicode">${hibernate.useUnicode}</prop>
+				<prop key="hibernate.characterEncoding">${hibernate.characterEncoding}</prop>
+				<prop key="current_session_context_class">thread</prop>
+			</props>
+		</property>
+	</bean>
+	
+</beans>
